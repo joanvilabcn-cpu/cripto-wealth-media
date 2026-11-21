@@ -1,0 +1,25 @@
+name: Verify public Cripto Wealth MP4
+on:
+  push:
+    paths:
+      - '.github/workflows/verify_mp4.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify direct public MP4 download
+        run: |
+          python3 - <<'PY'
+          import urllib.request,sys
+          url="https://raw.githubusercontent.com/joanvilabcn-cpu/cripto-wealth-media/main/cripto_wealth_20nov2026_publicacion.mp4"
+          req=urllib.request.Request(url,headers={"Range":"bytes=0-31"})
+          with urllib.request.urlopen(req,timeout=30) as r:
+              data=r.read(32)
+              print("HTTP:",r.status,"Content-Type:",r.headers.get("Content-Type"),"First bytes:",data[:16].hex())
+              if b"ftyp" not in data[:16]:
+                  sys.exit("ERROR: public URL did not serve MP4 data")
+              print("SUCCESS: public MP4 stream confirmed")
+          PY
